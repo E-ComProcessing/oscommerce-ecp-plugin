@@ -424,7 +424,14 @@ class ecomprocessing_checkout
 
 	function remove()
     {
-    	tep_db_query("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
+    	// include the list of project database tables (If there are not included yet)
+    	if (!defined('TABLE_CONFIGURATION') && defined('DIR_WS_INCLUDES')) 
+    	{
+    		require(DIR_WS_INCLUDES . 'database_tables.php');
+  		}
+    	
+    	if (defined('TABLE_CONFIGURATION')) 
+    	    tep_db_query("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
 	}
 
 	function updateStatuses($status_name)
