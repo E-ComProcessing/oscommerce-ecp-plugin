@@ -4,13 +4,12 @@
  *
  * Handler customer redirection in Asynchronous transactions
  *
- * @license     http://www.gnu.org/licenses/gpl-2.0.html
- * @copyright   2015 E-ComProcessing™
+ * @license     http://opensource.org/licenses/MIT The MIT License
+ * @copyright   2016 E-ComProcessing Ltd.
  * @version     $Id:$
- * @since       1.0.0
+ * @since       1.1.0
  */
 
-// "Shhh. Be vewy vewy quiet, I'm hunting wabbits"
 ini_set('display_errors', 'Off');
 error_reporting(0);
 
@@ -24,7 +23,7 @@ if (!tep_session_is_registered('customer_id')) {
 	tep_redirect(tep_href_link(FILENAME_LOGIN, '', 'SSL'));
 }
 
-$return = isset($_GET['return']) ? strval($_GET['return']) : null;
+$return = isset($_GET['return']) ? trim($_GET['return']) : null;
 
 switch ($return) {
 	default:
@@ -46,26 +45,10 @@ switch ($return) {
 	case 'failure':
 		global $payment;
 
-		require(DIR_WS_CLASSES . 'payment.php');
-
-		$payment_class = new payment($payment);
-
-		switch($payment) {
-			case 'ecomprocessing_checkout':
-				$error = MODULE_PAYMENT_EMERCHANTPAY_CHECKOUT_ERROR_DESC;
-				break;
-			case 'ecomprocessing_standard':
-				$error = MODULE_PAYMENT_EMERCHANTPAY_STANDARD_ERROR_DESC;
-				break;
-			default:
-				$error = 'Unable to process the transaction, please try again!';
-				break;
-		}
-
 		tep_redirect(
 			tep_href_link(
 				FILENAME_CHECKOUT_PAYMENT,
-				'error_message=' . urlencode($error),
+				'payment_error=' . $payment,
 				'SSL'
 			)
 		);
