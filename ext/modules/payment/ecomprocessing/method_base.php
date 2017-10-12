@@ -46,7 +46,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      * Return Module Version
      * @var string
      */
-    public $version         = "1.3.1";
+    public $version         = "1.4.0";
     /**
      * Return Module Version
      * @var string
@@ -624,10 +624,12 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                 \Genesis\API\Constants\Payment\Methods::QIWI,
                 \Genesis\API\Constants\Payment\Methods::SAFETY_PAY,
                 \Genesis\API\Constants\Payment\Methods::TELEINGRESO,
-                \Genesis\API\Constants\Transaction\Types::ABNIDEAL
+                \Genesis\API\Constants\Transaction\Types::ABNIDEAL,
+                \Genesis\API\Constants\Transaction\Types::PAYPAL_EXPRESS,
+                \Genesis\API\Constants\Transaction\Types::TRUSTLY_SALE
             )) &&
-            ($transaction['status'] ==
-                \Genesis\API\Constants\Transaction\States::APPROVED)
+                ($transaction['status'] ==
+                 \Genesis\API\Constants\Transaction\States::APPROVED)
         );
     }
 
@@ -648,7 +650,8 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                 \Genesis\API\Constants\Transaction\Types::SALE_3D,
                 \Genesis\API\Constants\Transaction\Types::INIT_RECURRING_SALE,
                 \Genesis\API\Constants\Transaction\Types::RECURRING_SALE,
-                \Genesis\API\Constants\Transaction\Types::REFUND
+                \Genesis\API\Constants\Transaction\Types::REFUND,
+                \Genesis\API\Constants\Transaction\Types::TRUSTLY_SALE
             )
         );
     }
@@ -2340,9 +2343,20 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      */
     protected static function getGeneratedTransactionId()
     {
-        return md5(uniqid() . microtime(true));
+        return substr(md5(uniqid() . microtime(true)), 0, 30);
     }
 
+    /**
+     * @param int $userId
+     * @param int $length
+     * @return string
+     */
+    public static function getCurrentUserIdHash($userId, $length = 20)
+    {
+        $userHash = $userId > 0 ? sha1($userId) : static::getGeneratedTransactionId();
+
+        return substr($userHash, 0, $length);
+    }
 
     /**
      * Gets state code (zone code) if available,

@@ -19,7 +19,7 @@
  */
 
 if (!class_exists('ecomprocessing_method_base')) {
-	require_once DIR_FS_CATALOG . "ext/modules/payment/ecomprocessing/method_base.php";
+	require_once DIR_FS_CATALOG . 'ext/modules/payment/ecomprocessing/method_base.php';
 }
 
 /**
@@ -121,7 +121,7 @@ class ecomprocessing_direct extends ecomprocessing_method_base
 						tep_draw_input_field(
 							'cc_owner',
 							sprintf(
-								"%s %s",
+								'%s %s',
 								$order->billing['firstname'],
 								$order->billing['lastname']
 							),
@@ -176,7 +176,7 @@ class ecomprocessing_direct extends ecomprocessing_method_base
 	{
 		global $messageStack;
 
-		if (!class_exists("cc_validation")) {
+		if (!class_exists('cc_validation')) {
 			include(DIR_WS_CLASSES . 'cc_validation.php');
 		}
 
@@ -318,79 +318,56 @@ class ecomprocessing_direct extends ecomprocessing_method_base
 		return false;
 	}
 
-	/**
-	 * Send transaction to Genesis
-	 *
-	 * @param stdClass $data
-	 * @return stdClass
-	 * @throws Exception
-	 * @throws \Genesis\Exceptions\ErrorAPI
-	 */
-	protected function pay($data)
-	{
-		switch ($data->transaction_type) {
-			default:
-			case \Genesis\API\Constants\Transaction\Types::AUTHORIZE:
-				$genesis = new \Genesis\Genesis('Financial\Cards\Authorize');
-				break;
-			case \Genesis\API\Constants\Transaction\Types::AUTHORIZE_3D:
-				$genesis = new \Genesis\Genesis('Financial\Cards\Authorize3D');
-				break;
-			case \Genesis\API\Constants\Transaction\Types::SALE:
-				$genesis = new \Genesis\Genesis('Financial\Cards\Sale');
-				break;
-			case \Genesis\API\Constants\Transaction\Types::SALE_3D:
-				$genesis = new \Genesis\Genesis('Financial\Cards\Sale3D');
-				break;
-		}
+    /**
+     * Send transaction to Genesis
+     *
+     * @param stdClass $data
+     *
+     * @return stdClass
+     * @throws Exception
+     * @throws \Genesis\Exceptions\ErrorAPI
+     */
+    protected function pay($data)
+    {
+        $params = array(
+            'transaction_id'      => $data->transaction_id,
+            'remote_ip'           => $this->getServerRemoteAddress(),
+            'usage'               => 'osCommerce Electronic Transaction',
+            'currency'            => $data->currency,
+            'amount'              => $data->order->info['total'],
+            'card_holder'         => $data->card_info['cc_owner'],
+            'card_number'         => $data->card_info['cc_number'],
+            'expiration_year'     => $data->card_info['cc_expiry_year'],
+            'expiration_month'    => $data->card_info['cc_expiry_month'],
+            'cvv'                 => $data->card_info['cc_cvv'],
+            'customer_email'      => $data->order->customer['email_address'],
+            'customer_phone'      => $data->order->customer['telephone'],
+            'billing_first_name'  => $data->order->billing['firstname'],
+            'billing_last_name'   => $data->order->billing['lastname'],
+            'billing_address1'    => $data->order->billing['street_address'],
+            'billing_zip_code'    => $data->order->billing['postcode'],
+            'billing_city'        => $data->order->billing['city'],
+            'billing_state'       => $this->getStateCode($data->order->billing),
+            'billing_country'     => $data->order->billing['country']['iso_code_2'],
+            'shipping_first_name' => $data->order->delivery['firstname'],
+            'shipping_last_name'  => $data->order->delivery['lastname'],
+            'shipping_address1'   => $data->order->delivery['street_address'],
+            'shipping_zip_code'   => $data->order->delivery['postcode'],
+            'shipping_city'       => $data->order->delivery['city'],
+            'shipping_state'      => $this->getStateCode($data->order->delivery),
+            'shipping_country'    => $data->order->delivery['country']['iso_code_2'],
+        );
+        if (isset($data->urls)) {
+            $params['notification_url']   = $data->urls['notification'];
+            $params['return_success_url'] = $data->urls['return_success'];
+            $params['return_failure_url'] = $data->urls['return_failure'];
+        }
 
-		if (isset($genesis)) {
-			$genesis
-				->request()
-					->setTransactionId( $data->transaction_id )
-					->setRemoteIp(
-						$this->getServerRemoteAddress()
-					)
-					->setUsage( 'osCommerce Electronic Transaction' )
-					->setCurrency( $data->currency )
-					->setAmount( $data->order->info['total'] )
-					->setCardHolder( $data->card_info['cc_owner'] )
-					->setCardNumber( $data->card_info['cc_number'] )
-					->setExpirationYear( $data->card_info['cc_expiry_year'] )
-					->setExpirationMonth( $data->card_info['cc_expiry_month'] )
-					->setCvv( $data->card_info['cc_cvv'] )
-					->setCustomerEmail( $data->order->customer['email_address'] )
-					->setCustomerPhone( $data->order->customer['telephone'] )
-					->setBillingFirstName( $data->order->billing['firstname'] )
-					->setBillingLastName( $data->order->billing['lastname'] )
-					->setBillingAddress1( $data->order->billing['street_address'] )
-					->setBillingZipCode( $data->order->billing['postcode'] )
-					->setBillingCity( $data->order->billing['city'] )
-					->setBillingState( $this->getStateCode($data->order->billing) )
-					->setBillingCountry( $data->order->billing['country']['iso_code_2'] )
-					->setShippingFirstName( $data->order->delivery['firstname'] )
-					->setShippingLastName( $data->order->delivery['lastname'] )
-					->setShippingAddress1( $data->order->delivery['street_address'] )
-					->setShippingZipCode( $data->order->delivery['postcode'] )
-					->setShippingCity( $data->order->delivery['city'] )
-					->setShippingState( $this->getStateCode($data->order->delivery) )
-					->setShippingCountry( $data->order->delivery['country']['iso_code_2'] );
+        $genesis = \Genesis\Genesis::financialFactory($data->transaction_type, $params);
+        $genesis->execute();
 
-			if (isset($data->urls)) {
-				$genesis
-					->request()
-						->setNotificationUrl( $data->urls['notification'] )
-						->setReturnSuccessUrl( $data->urls['return_success'] )
-						->setReturnFailureUrl( $data->urls['return_failure'] );
-			}
-
-			$genesis->execute();
-
-			return $genesis->response()->getResponseObject();
-		} else {
-			return null;
-		}
-	}
+        return $genesis->response()->getResponseObject();
+    }
 
 	/**
 	 * Generates Admin Order Transactions Panel
@@ -428,32 +405,32 @@ class ecomprocessing_direct extends ecomprocessing_method_base
 	{
 		$configurationValues = array(
             array(
-				"Checkout Title",
+				'Checkout Title',
 				$this->getSettingKey('CHECKOUT_PAGE_TITLE'),
-				"Pay safely with E-ComProcessing Direct",
-				"This name will be displayed on the checkout page",
-                "6",
-				"10",
-				"ecp_zfg_draw_input(null, ",
+				'Pay safely with E-ComProcessing Direct',
+				'This name will be displayed on the checkout page',
+                '6',
+				'10',
+				'ecp_zfg_draw_input(null, ',
 				null
 			),
 			array(
-				"Genesis API Token",
+				'Genesis API Token',
 				$this->getSettingKey('TOKEN'),
-			    "",
-				"Enter your Token, required for accessing the Genesis Gateway",
-                "6",
-				"40",
+			    '',
+				'Enter your Token, required for accessing the Genesis Gateway',
+                '6',
+				'40',
 				"ecp_zfg_draw_input({$this->requiredOptionsAttributes}, ",
 				null
 			),
 			array(
-				"Transaction Type",
-				$this->getSettingKey("TRANSACTION_TYPE"),
+				'Transaction Type',
+				$this->getSettingKey('TRANSACTION_TYPE'),
 				\Genesis\API\Constants\Transaction\Types::SALE,
-				"What transaction type should we use upon purchase?.",
-                "6",
-				"60",
+				'What transaction type should we use upon purchase?.',
+                '6',
+				'60',
 				"ecp_zfg_select_drop_down_single_from_object(\"{$this->code}\",\"getConfigTransactionTypesOptions\", ",
 				null
 			)
@@ -472,10 +449,10 @@ class ecomprocessing_direct extends ecomprocessing_method_base
 	public function getConfigTransactionTypesOptions()
 	{
 		$transactionTypes = array(
-			\Genesis\API\Constants\Transaction\Types::AUTHORIZE    => "Authorize",
-			\Genesis\API\Constants\Transaction\Types::AUTHORIZE_3D => "Authorize3D",
-			\Genesis\API\Constants\Transaction\Types::SALE    	   => "Sale",
-			\Genesis\API\Constants\Transaction\Types::SALE_3D 	   => "Sale 3D"
+			\Genesis\API\Constants\Transaction\Types::AUTHORIZE    => 'Authorize',
+			\Genesis\API\Constants\Transaction\Types::AUTHORIZE_3D => 'Authorize3D',
+			\Genesis\API\Constants\Transaction\Types::SALE    	   => 'Sale',
+			\Genesis\API\Constants\Transaction\Types::SALE_3D 	   => 'Sale 3D'
 		);
 
 		return $this->buildSettingsDropDownOptions(
