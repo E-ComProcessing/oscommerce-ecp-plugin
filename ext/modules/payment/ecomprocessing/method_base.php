@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2016 E-ComProcessing Ltd.
+ * Copyright (C) 2018 E-ComProcessing Ltd.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -12,8 +12,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * @author      EComProcessing
- * @copyright   2016 E-ComProcessing Ltd.
+ * @author      E-ComProcessing
+ * @copyright   2018 E-ComProcessing Ltd.
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -46,7 +46,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      * Return Module Version
      * @var string
      */
-    public $version         = "1.4.0";
+    public $version         = "1.5.0";
     /**
      * Return Module Version
      * @var string
@@ -628,8 +628,8 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                 \Genesis\API\Constants\Transaction\Types::PAYPAL_EXPRESS,
                 \Genesis\API\Constants\Transaction\Types::TRUSTLY_SALE
             )) &&
-                ($transaction['status'] ==
-                 \Genesis\API\Constants\Transaction\States::APPROVED)
+            ($transaction['status'] ==
+                \Genesis\API\Constants\Transaction\States::APPROVED)
         );
     }
 
@@ -2169,6 +2169,8 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
         } else {
             $check = tep_db_fetch_array($status_query);
 
+            tep_db_query("update " . TABLE_ORDERS_STATUS . " set orders_status_name = '" . $status_name . "' WHERE orders_status_id = '" . $check['orders_status_id'] . "'");
+
             $status_id = $check['orders_status_id'];
         }
 
@@ -2343,7 +2345,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      */
     protected static function getGeneratedTransactionId()
     {
-        return substr(md5(uniqid() . microtime(true)), 0, 30);
+        return substr(md5(uniqid() . microtime(true)),0, 30);
     }
 
     /**

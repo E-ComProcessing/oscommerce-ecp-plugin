@@ -96,4 +96,4 @@ _Note_: If you have trouble with your credentials or terminal configuration, get
 
 You're now ready to process payments through our gateway.
 
-[support]: mailto:tech-support@e-comprocessing.net
+[support]: mailto:tech-support@e-comprocessing.com

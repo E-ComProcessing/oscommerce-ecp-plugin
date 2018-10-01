@@ -5,7 +5,7 @@
  * Contains E-ComProcessing Checkout Payment Logic
  *
  * @license     http://opensource.org/licenses/MIT The MIT License
- * @copyright   2016 E-ComProcessing Ltd.
+ * @copyright   2018 E-ComProcessing Ltd.
  * @version     $Id:$
  * @since       1.1.0
  */
@@ -13,127 +13,127 @@
 /**
  * E-ComProcessing Checkout
  *
- * Main class, instantiated by E-ComProcessing providing
+ * Main class, instantiated by EComProcessing providing
  * necessary methods to facilitate payments through
  * E-ComProcessing's Payment Gateway
  */
 
-if (!class_exists('ecomprocessing_method_base')) {
-	require_once DIR_FS_CATALOG . 'ext/modules/payment/ecomprocessing/method_base.php';
-}
-
 use Genesis\API\Constants\Transaction\Parameters\PayByVouchers\CardTypes;
 use Genesis\API\Constants\Transaction\Parameters\PayByVouchers\RedeemTypes;
-use Genesis\API\Constants\Payment\Methods;
 use Genesis\API\Constants\Transaction\Types;
+use Genesis\API\Constants\Payment\Methods;
+
+if (!class_exists('ecomprocessing_method_base')) {
+    require_once DIR_FS_CATALOG . 'ext/modules/payment/ecomprocessing/method_base.php';
+}
 
 class ecomprocessing_checkout extends ecomprocessing_method_base
 {
-	/**
-	 * ecomprocessing_checkout constructor.
-	 */
-	public function __construct()
-	{
-		$this->code = static::ECOMPROCESSING_CHECKOUT_METHOD_CODE;
-		parent::__construct();
-	}
+    /**
+     * ecomprocessing_checkout constructor.
+     */
+    public function __construct()
+    {
+        $this->code = static::ECOMPROCESSING_CHECKOUT_METHOD_CODE;
+        parent::__construct();
+    }
 
-	/**
-	 * Get If Module Requires SSL or not
-	 * @return bool
-	 */
-	protected function getModuleRequiresSSL()
-	{
-		return false;
-	}
+    /**
+     * Get If Module Requires SSL or not
+     * @return bool
+     */
+    protected function getModuleRequiresSSL()
+    {
+        return false;
+    }
 
-	/**
-	 * Get Transactions Table name for the Payment Module
-	 * @return string
-	 */
-	protected function getTableNameTransactions()
-	{
-		return static::ECOMPROCESSING_CHECKOUT_TRANSACTIONS_TABLE_NAME;
-	}
+    /**
+     * Get Transactions Table name for the Payment Module
+     * @return string
+     */
+    protected function getTableNameTransactions()
+    {
+        return static::ECOMPROCESSING_CHECKOUT_TRANSACTIONS_TABLE_NAME;
+    }
 
-	/**
-	 * Determines if the Module Admin Settings are properly configured
-	 * @return bool
-	 */
-	protected function getIsConfigured()
-	{
-		return
-			parent::getIsConfigured() &&
-			!empty($this->getSetting('TRANSACTION_TYPES'));
-	}
+    /**
+     * Determines if the Module Admin Settings are properly configured
+     * @return bool
+     */
+    protected function getIsConfigured()
+    {
+        return
+            parent::getIsConfigured() &&
+            !empty($this->getSetting('TRANSACTION_TYPES'));
+    }
 
-	/**
-	 * Process Request to the Gateway
-	 * @return bool
-	 */
-	protected function doBeforeProcessPayment()
-	{
-		global $order, $messageStack;
+    /**
+     * Process Request to the Gateway
+     * @return bool
+     */
+    protected function doBeforeProcessPayment()
+    {
+        global $order, $messageStack;
 
-		$data = new stdClass();
-		$data->transaction_id = $this->getGeneratedTransactionId();
-		$data->description = '';
+        $data                 = new stdClass();
+        $data->transaction_id = $this->getGeneratedTransactionId();
+        $data->description    = '';
 
-		foreach ($order->products as $product) {
-			$separator = ($product == end($order->products)) ? '' : PHP_EOL;
+        foreach ($order->products as $product) {
+            $separator = ($product == end($order->products)) ? '' : PHP_EOL;
 
-			$data->description .= $product['qty'] . ' x ' . $product['name'] . $separator;
-		}
+            $data->description .= $product['qty'] . ' x ' . $product['name'] . $separator;
+        }
 
-		$data->currency = $order->info['currency'];
+        $data->currency = $order->info['currency'];
 
-		$data->language_id = $this->getSetting('LANGUAGE');
+        $data->language_id = $this->getSetting('LANGUAGE');
 
-		$data->urls = array(
-			'notification'   =>
-				$this->getNotificationUrl(),
-			'return_success' =>
-				$this->getReturnUrl(static::ACTION_SUCCESS),
-			'return_failure' =>
-				$this->getReturnUrl(static::ACTION_FAILURE),
-			'return_cancel' =>
-				$this->getReturnUrl(static::ACTION_CANCEL)
-		);
+        $data->urls = array(
+            'notification'   =>
+                $this->getNotificationUrl(),
+            'return_success' =>
+                $this->getReturnUrl(static::ACTION_SUCCESS),
+            'return_failure' =>
+                $this->getReturnUrl(static::ACTION_FAILURE),
+            'return_cancel'  =>
+                $this->getReturnUrl(static::ACTION_CANCEL)
+        );
 
-		$data->order = $order;
+        $data->order = $order;
 
-		$errorMessage = null;
+        $errorMessage = null;
 
-		try {
-			$this->responseObject = $this->pay($data);
+        try {
+            $this->responseObject = $this->pay($data);
 
-			return true;
-		} catch (\Genesis\Exceptions\ErrorAPI $api) {
-			$errorMessage = $api->getMessage();
-			$this->responseObject = null;
-		} catch (\Genesis\Exceptions\ErrorNetwork $e) {
-			$errorMessage = $this->getSetting('MESSAGE_CHECK_CREDENTIALS') .
-				PHP_EOL .
-				$e->getMessage();
-			$this->responseObject = null;
-		} catch (\Exception $e) {
-			$errorMessage = $e->getMessage();
-			$this->responseObject = null;
-		}
+            return true;
+        } catch (\Genesis\Exceptions\ErrorAPI $api) {
+            $errorMessage         = $api->getMessage();
+            $this->responseObject = null;
+        } catch (\Genesis\Exceptions\ErrorNetwork $e) {
+            $errorMessage         = $this->getSetting('MESSAGE_CHECK_CREDENTIALS') .
+                                    PHP_EOL .
+                                    $e->getMessage();
+            $this->responseObject = null;
+        } catch (\Exception $e) {
+            $errorMessage         = $e->getMessage();
+            $this->responseObject = null;
+        }
 
-		if (empty($this->responseObject) && !empty($errorMessage)) {
-			$messageStack->add_session($errorMessage, 'error');
-			tep_redirect(
-				tep_href_link(
-					FILENAME_CHECKOUT_PAYMENT,
-					'payment_error=' . get_class($this),
-					'SSL'
-				)
-			);
-		}
+        if (empty($this->responseObject) && !empty($errorMessage)) {
+            $messageStack->add_session($errorMessage, 'error');
+            tep_redirect(
+                tep_href_link(
+                    FILENAME_CHECKOUT_PAYMENT,
+                    'payment_error=' . get_class($this),
+                    'SSL'
+                )
+            );
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     /**
      * Send transaction to Genesis
@@ -223,30 +223,32 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         }
     }
 
-	/**
-	 * Generates Admin Order Transactions Panel
-	 * @param int $order_id
-	 * @return null|string
-	 */
-	public function displayTransactionsPanel($order_id)
-	{
-		if ($this->getIsAvailable()) {
-			return parent::displayTransactionsPanel($order_id);
-		} else {
-			return false;
-		}
-	}
+    /**
+     * Generates Admin Order Transactions Panel
+     *
+     * @param int $order_id
+     *
+     * @return null|string
+     */
+    public function displayTransactionsPanel($order_id)
+    {
+        if ($this->getIsAvailable()) {
+            return parent::displayTransactionsPanel($order_id);
+        } else {
+            return false;
+        }
+    }
 
-	/**
-	 * Confirmation Check mothod for Checkout Confirmation Page
-	 * @return bool
-	 */
-	function confirmation()
-	{
+    /**
+     * Confirmation Check mothod for Checkout Confirmation Page
+     * @return bool
+     */
+    function confirmation()
+    {
         ?>
         <script type="text/javascript">
             $(document).ready(function () {
-                $("form").on('submit', function() {
+                $("form").on('submit', function () {
                     $('#tdb5').button("disable").prop('disabled', true);
                 });
             });
@@ -257,8 +259,8 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         </p>
         <?php
 
-		return false;
-	}
+        return false;
+    }
 
     /**
      * Get a list with the selected Transaction Type
@@ -302,51 +304,51 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         return $processed_list;
     }
 
-	/**
-	 * Builds a list of the available admin setting
-	 * @return array
-	 */
-	protected function getConfigurationValues()
-	{
-		$configurationValues = array(
-			array(
-				'Checkout Title',
-				$this->getSettingKey('CHECKOUT_PAGE_TITLE'),
-				'Pay safely with E-ComProcessing Checkout',
-				'This name will be displayed on the checkout page',
-				'6',
-				'10',
-				'ecp_zfg_draw_input(null, ',
-				null
-			),
-			array(
-				'Transaction Types',
-				$this->getSettingKey('TRANSACTION_TYPES'),
-				\Genesis\API\Constants\Transaction\Types::SALE,
-				'What transaction type should we use upon purchase?.',
-				'6',
-				'60',
-				"ecp_zfg_select_drop_down_multiple_from_object({$this->requiredOptionsAttributes}, \"{$this->code}\", \"getConfigTransactionTypesOptions\", ",
-				null
-			),
-			array(
-				'Checkout Page Language',
-				$this->getSettingKey('LANGUAGE'),
-				'en',
-				'What language (localization) should we have on the Checkout?.',
-				'6',
-				'65',
-				"ecp_zfg_select_drop_down_single_from_object(\"{$this->code}\", \"getConfigLanguageOptions\",",
-				null
-			),
+    /**
+     * Builds a list of the available admin setting
+     * @return array
+     */
+    protected function getConfigurationValues()
+    {
+        $configurationValues = array(
+            array(
+                'Checkout Title',
+                $this->getSettingKey('CHECKOUT_PAGE_TITLE'),
+                'Pay safely with E-ComProcessing Checkout',
+                'This name will be displayed on the checkout page',
+                '6',
+                '10',
+                'ecp_zfg_draw_input(null, ',
+                null
+            ),
+            array(
+                'Transaction Types',
+                $this->getSettingKey('TRANSACTION_TYPES'),
+                Types::SALE,
+                'What transaction type should we use upon purchase?.',
+                '6',
+                '60',
+                "ecp_zfg_select_drop_down_multiple_from_object({$this->requiredOptionsAttributes}, \"{$this->code}\", \"getConfigTransactionTypesOptions\", ",
+                null
+            ),
+            array(
+                'Checkout Page Language',
+                $this->getSettingKey('LANGUAGE'),
+                'en',
+                'What language (localization) should we have on the Checkout?.',
+                '6',
+                '65',
+                "ecp_zfg_select_drop_down_single_from_object(\"{$this->code}\", \"getConfigLanguageOptions\",",
+                null
+            ),
 
-		);
+        );
 
-		return array_merge(
-			parent::getConfigurationValues(),
-			$configurationValues
-		);
-	}
+        return array_merge(
+            parent::getConfigurationValues(),
+            $configurationValues
+        );
+    }
 
     /**
      * Builds a list with the available Transaction Types & Payment Methods
@@ -396,55 +398,55 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         );
     }
 
-	/**
-	 * Builds a list with the available Checkout Languages
-	 * @return string
-	 */
-	public function getConfigLanguageOptions()
-	{
-		$languages = array(
-			'en' => 'English',
-			'it' => 'Italian',
-			'es' => 'Spanish',
-			'fr' => 'French',
-			'de' => 'German',
-			'ja' => 'Japanese',
-			'zh' => 'Chinese',
-			'ar' => 'Arabic',
-			'pt' => 'Portuguese',
-			'tr' => 'Turkish',
-			'ru' => 'Russian',
-			'hi' => 'Hindi',
-			'bg' => 'Bulgarian'
-		);
+    /**
+     * Builds a list with the available Checkout Languages
+     * @return string
+     */
+    public function getConfigLanguageOptions()
+    {
+        $languages = array(
+            'en' => 'English',
+            'it' => 'Italian',
+            'es' => 'Spanish',
+            'fr' => 'French',
+            'de' => 'German',
+            'ja' => 'Japanese',
+            'zh' => 'Chinese',
+            'ar' => 'Arabic',
+            'pt' => 'Portuguese',
+            'tr' => 'Turkish',
+            'ru' => 'Russian',
+            'hi' => 'Hindi',
+            'bg' => 'Bulgarian'
+        );
 
-		return $this->buildSettingsDropDownOptions(
-			$languages
-		);
-	}
+        return $this->buildSettingsDropDownOptions(
+            $languages
+        );
+    }
 
-	/**
-	 * Get a list with all available Admin Settings for the Module
-	 * @return array
-	 */
-	function keys() {
-		$keys = parent::keys();
+    /**
+     * Get a list with all available Admin Settings for the Module
+     * @return array
+     */
+    function keys()
+    {
+        $keys = parent::keys();
 
-		$this->appendSettingKeys(
-			$keys,
-			array(
-				'STATUS',
-				'ENVIRONMENT',
-				'TRANSACTION_TYPES'
-			),
-			array(
-				'CHECKOUT_PAGE_TITLE',
-				'TRANSACTION_TYPES',
-				'LANGUAGE'
-			)
-		);
+        $this->appendSettingKeys(
+            $keys,
+            array(
+                'STATUS',
+                'ENVIRONMENT',
+                'TRANSACTION_TYPES'
+            ),
+            array(
+                'CHECKOUT_PAGE_TITLE',
+                'TRANSACTION_TYPES',
+                'LANGUAGE'
+            )
+        );
 
-		return $keys;
-	}
+        return $keys;
+    }
 }
-
