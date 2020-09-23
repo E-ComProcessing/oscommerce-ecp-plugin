@@ -46,7 +46,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      * Return Module Version
      * @var string
      */
-    public $version         = "1.5.0";
+    public $version         = "1.5.1";
     /**
      * Return Module Version
      * @var string
