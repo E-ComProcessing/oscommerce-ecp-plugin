@@ -1,22 +1,22 @@
 <?php
 /**
- * E-ComProcessing Direct English Language file
+ * E-Comprocessing Direct English Language file
  *
  * Contains English translation for strings used in the
- * E-ComProcessing Direct module
+ * E-Comprocessing Direct module
  *
  * @license     http://opensource.org/licenses/MIT The MIT License
- * @copyright   2018 E-ComProcessing Ltd.
+ * @copyright   2018 E-Comprocessing Ltd.
  * @version     $Id:$
  * @since       1.1.0
  */
 
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_TITLE', 'E-ComProcessing Direct');
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_PUBLIC_CHECKOUT_CONTAINER', '<img style="border: 0px none; display: block" src="images/ecomprocessing/logos/ecomprocessing_direct.png" /><span style="display: block; font-weight: bold; margin-left: 50pt;">E-ComProcessing offers a secure way to pay for your order, using Credit/Debit/Prepaid Card</span>');
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_PUBLIC_TITLE', 'E-ComProcessing Direct');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_TITLE', 'E-Comprocessing Direct');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_PUBLIC_CHECKOUT_CONTAINER', '<img style="border: 0px none; display: block" src="images/ecomprocessing/logos/ecomprocessing_direct.png" /><span style="display: block; font-weight: bold; margin-left: 50pt;">E-Comprocessing offers a secure way to pay for your order, using Credit/Debit/Prepaid Card</span>');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_PUBLIC_TITLE', 'E-Comprocessing Direct');
 
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_DESCRIPTION', '<a href="https://e-comprocessing.com" target="_blank" style="width: 50%; display: block; margin: 0px auto;"><img style="border: 0px none; margin: 0px; width: 100%;" src="images/ecomprocessing/logos/ecomprocessing.png"/></a> <br> Direct API - allow customers to enter their CreditCard information on your website. Note: You need PCI-DSS certificate in order to enable this payment method. <br/> <br/> <img style="border: 0px none; margin: 0 auto; display: block" src="images/ecomprocessing/logos/ecomprocessing_direct.png" /> <br/> <a href="https://e-comprocessing.com" target="_blank" style="text-decoration:underline;font-weight:bold; display: block; text-align: center;">Visit E-ComProcessing\'s Website</a> ');
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_REDIRECT_WARNING', 'Notice: You will be redirect to E-ComProcessing\'s Secure Checkout Page, in order to complete your payment!');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_DESCRIPTION', '<a href="https://e-comprocessing.com" target="_blank" style="width: 50%; display: block; margin: 0px auto;"><img style="border: 0px none; margin: 0px; width: 100%;" src="images/ecomprocessing/logos/ecomprocessing.png"/></a> <br> Direct API - allow customers to enter their CreditCard information on your website. Note: You need PCI-DSS certificate in order to enable this payment method. <br/> <br/> <img style="border: 0px none; margin: 0 auto; display: block" src="images/ecomprocessing/logos/ecomprocessing_direct.png" /> <br/> <a href="https://e-comprocessing.com" target="_blank" style="text-decoration:underline;font-weight:bold; display: block; text-align: center;">Visit E-Comprocessing\'s Website</a> ');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_TEXT_REDIRECT_WARNING', 'Notice: You will be redirect to E-Comprocessing\'s Secure Checkout Page, in order to complete your payment!');
 // Error
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_ERROR_TITLE', 'Order processing error!');
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_ERROR_DESC', 'An error was reported while processing your order, please try again!');
@@ -40,7 +40,7 @@ define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_MESSAGE_ENTER_ALL_REQUIRED_DATA', '
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_MESSAGE_CHECK_CREDENTIALS', 'Please, make sure you\'ve properly entered your module credentials.');
 
 //entries
-define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_LABEL_ORDER_TRANS_TITLE', 'E-ComProcessing Transactions');
+define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_LABEL_ORDER_TRANS_TITLE', 'E-Comprocessing Transactions');
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_LABEL_CAPTURE_TRAN_TITLE', 'Capture Transaction');
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_LABEL_REFUND_TRAN_TITLE', 'Refund Transaction');
 define('MODULE_PAYMENT_ECOMPROCESSING_DIRECT_LABEL_VOID_TRAN_TITLE', 'Void Transaction');

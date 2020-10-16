@@ -1,14 +1,14 @@
-E-ComProcessing Gateway Module for osCommerce
+E-Comprocessing Gateway Module for osCommerce
 =============================
 
-This is a Payment Module for osCommerce, that gives you the ability to process payments through E-ComProcessing's Payment Gateway - Genesis.
+This is a Payment Module for osCommerce, that gives you the ability to process payments through E-Comprocessing's Payment Gateway - Genesis.
 
 Requirements
 ------------
 
 * osCommerce v2.x
 * [GenesisPHP v1.8.3](https://github.com/GenesisGateway/genesis_php/releases/tag/1.8.3) - (Integrated in Module)
-* PCI-certified server in order to use ```E-ComProcessing Direct```
+* PCI-certified server in order to use ```E-Comprocessing Direct```
 
 GenesisPHP Requirements
 ------------
@@ -30,18 +30,18 @@ Installation
 * Login inside the ```Administration``` area
 * Make sure the Web User have write permissions to the following file ```<admin>/orders.php```, because it will be extended to allow managing order transactions
 * Navigate to ```Modules``` -> ```Payment``` and click ```Install Module``` button
-* Select the ```E-ComProcessing Checkout``` or ```E-ComProcessing Direct``` module and click ```Install Module```
+* Select the ```E-Comprocessing Checkout``` or ```E-Comprocessing Direct``` module and click ```Install Module```
 * Set your credentials click ```Save```
 
 Supported Transactions & Payment Methods
 ---------------------
-* ```E-ComProcessing Direct``` Payment Method
+* ```E-Comprocessing Direct``` Payment Method
 	* __Authorize__
 	* __Authorize (3D-Secure)__
 	* __Sale__
 	* __Sale (3D-Secure)__
 
-* ```E-ComProcessing Checkout``` Payment Method
+* ```E-Comprocessing Checkout``` Payment Method
     * __Alipay__
     * __ABN iDEAL__
     * __Authorize__
@@ -80,7 +80,7 @@ Supported Transactions & Payment Methods
 
 Configure osCommerce over secured HTTPS Connection
 ------------
-_Note:_ This steps should be followed if you wish to use the ```E-ComProcessing Direct``` Method
+_Note:_ This steps should be followed if you wish to use the ```E-Comprocessing Direct``` Method
 
 * Ensure you have installed a valid SSL Certificate on your __PCI-DSS Certified__ Web Server and you have configured your __Virtual Host__ properly.
 * Edit your Admin Configuration file ```<your-admin-folder>/includes/configure.php```

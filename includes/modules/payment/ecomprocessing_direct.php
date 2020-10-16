@@ -1,21 +1,21 @@
 <?php
 /**
- * E-ComProcessing Direct
+ * E-Comprocessing Direct
  *
- * Contains E-ComProcessing Direct Payment Logic
+ * Contains E-Comprocessing Direct Payment Logic
  *
  * @license     http://opensource.org/licenses/MIT The MIT License
- * @copyright   2018 E-ComProcessing Ltd.
+ * @copyright   2018 E-Comprocessing Ltd.
  * @version     $Id:$
  * @since       1.1.0
  */
 
 /**
- * E-ComProcessing Direct
+ * E-Comprocessing Direct
  *
- * Main class, instantiated by EComProcessing providing
+ * Main class, instantiated by EComprocessing providing
  * necessary methods to facilitate payments through
- * E-ComProcessing's Payment Gateway
+ * E-Comprocessing's Payment Gateway
  */
 
 use Genesis\API\Constants\Transaction\Types;
@@ -379,7 +379,7 @@ class ecomprocessing_direct extends ecomprocessing_method_base
             array(
                 'Checkout Title',
                 $this->getSettingKey('CHECKOUT_PAGE_TITLE'),
-                'Pay safely with E-ComProcessing Direct',
+                'Pay safely with E-Comprocessing Direct',
                 'This name will be displayed on the checkout page',
                 '6',
                 '10',

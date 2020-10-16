@@ -1,21 +1,21 @@
 <?php
 /**
- * E-ComProcessing Checkout
+ * E-Comprocessing Checkout
  *
- * Contains E-ComProcessing Checkout Payment Logic
+ * Contains E-Comprocessing Checkout Payment Logic
  *
  * @license     http://opensource.org/licenses/MIT The MIT License
- * @copyright   2018 E-ComProcessing Ltd.
+ * @copyright   2018 E-Comprocessing Ltd.
  * @version     $Id:$
  * @since       1.1.0
  */
 
 /**
- * E-ComProcessing Checkout
+ * E-Comprocessing Checkout
  *
- * Main class, instantiated by EComProcessing providing
+ * Main class, instantiated by EComprocessing providing
  * necessary methods to facilitate payments through
- * E-ComProcessing's Payment Gateway
+ * E-Comprocessing's Payment Gateway
  */
 
 use Genesis\API\Constants\Transaction\Parameters\PayByVouchers\CardTypes;
@@ -314,7 +314,7 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             array(
                 'Checkout Title',
                 $this->getSettingKey('CHECKOUT_PAGE_TITLE'),
-                'Pay safely with E-ComProcessing Checkout',
+                'Pay safely with E-Comprocessing Checkout',
                 'This name will be displayed on the checkout page',
                 '6',
                 '10',
