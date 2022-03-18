@@ -7,7 +7,7 @@ Requirements
 ------------
 
 * osCommerce v2.x
-* [GenesisPHP v1.8.3](https://github.com/GenesisGateway/genesis_php/releases/tag/1.8.3) - (Integrated in Module)
+* [GenesisPHP v1.20.0](https://github.com/GenesisGateway/genesis_php/releases/tag/1.20.0) - (Integrated in Module)
 * PCI-certified server in order to use ```E-Comprocessing Direct```
 
 GenesisPHP Requirements
@@ -42,40 +42,78 @@ Supported Transactions & Payment Methods
 	* __Sale (3D-Secure)__
 
 * ```E-Comprocessing Checkout``` Payment Method
-    * __Alipay__
-    * __ABN iDEAL__
+    * __Argencard__
+    * __Aura__
     * __Authorize__
     * __Authorize (3D-Secure)__
+    * __Baloto__
+    * __Bancomer__
+    * __Bancontact__
+    * __Banco de Occidente__
+    * __Banco do Brasil__
+    * __BitPay__
+    * __Boleto__
+    * __Bradesco__
+    * __Cabal__
     * __CashU__
-    * __Citadel__
+    * __Cencosud__
+    * __Davivienda__
+    * __Efecty__
+    * __Elo__
+    * __eps__
     * __eZeeWallet__
+    * __Fashioncheque__
+    * __GiroPay__
+    * __GooglePay__
+    * __iDeal__
     * __iDebit__
-    * __INPay__
     * __InstaDebit__
+    * __InstantTransfer__
+    * __InitRecurringSale__
+    * __InitRecurringSale (3D-Secure)__
+    * __Intersolve__
+    * __Itau__
+    * __Klarna__
+    * __Multibanco__
+    * __MyBank__
+    * __Naranja__
+    * __Nativa__
+    * __Neosurf__
     * __Neteller__
+    * __Online Banking__
+    * __OXXO__
     * __P24__
-    * __PayByVoucher (Sale)__
-    * __PayByVoucher (oBeP)__
-    * __PayPal Express__
+    * __Pago Facil__
+    * __PayPal__
     * __PaySafeCard__
-    * __PaySec__
+    * __PayU__
     * __POLi__
+    * __Post Finance__
     * __PPRO__
-    	* __eps__
-    	* __GiroPay__
-    	* __Qiwi__
-    	* __Przelewy24__
-    	* __SafetyPay__
-    	* __TeleIngreso__
-    	* __TrustPay__
-    	* __Mr.Cash__
-    	* __MyBank__
+        * __eps__
+        * __GiroPay__
+        * __Ideal__
+        * __Przelewy24__
+        * __SafetyPay__
+        * __TrustPay__
+        * __BCMC__
+        * __MyBank__
+    * __PSE__
+    * __RapiPago__
+    * __Redpagos__
+    * __SafetyPay__
     * __Sale__
     * __Sale (3D-Secure)__
+    * __Santander__
     * __Sepa Direct Debit__
     * __SOFORT__
+    * __Tarjeta Shopping__
+    * __TCS__
     * __Trustly__
+    * __TrustPay__
+    * __UPI__
     * __WebMoney__
+    * __WebPay__
     * __WeChat__
 
 Configure osCommerce over secured HTTPS Connection

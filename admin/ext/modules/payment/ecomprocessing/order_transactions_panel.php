@@ -22,7 +22,7 @@ if (!class_exists("ecomprocessing_base")) {
 }
 
 /**
- * EComprocessing Class for Managing Order Transactions
+ * ecomprocessing Class for Managing Order Transactions
  * Class ecomprocessing_order_transactions_panel
  */
 class ecomprocessing_order_transactions_panel
@@ -64,7 +64,7 @@ class ecomprocessing_order_transactions_panel
         }
 
         $query = tep_db_query('select count(`unique_id`) as `transactions_count` from `' . $table_name . '`
-                                where `order_id` = "' . $order_id . '"');
+                                where `order_id` = "' . intval($order_id) . '"');
 
         $fields = tep_db_fetch_array($query);
         return $fields['transactions_count'] > 0;
@@ -151,9 +151,13 @@ class ecomprocessing_order_transactions_panel
                             require_once(DIR_FS_CATALOG_LANGUAGES . $_SESSION['language'] . '/modules/payment/' . $methodCode . '.php');
                             $module = new $methodCode;
                             if (method_exists($module, $action)) {
+                                $usage = empty($requestData['message']) ?
+                                    str_replace('do', '', $action) . ' OsCommerce transaction' :
+                                    $requestData['message'];
+
                                 $data = array(
                                     'reference_id' => $requestData['reference_id'],
-                                    'usage'        => $requestData['message'],
+                                    'usage'        => $usage,
                                 );
 
                                 if ($action != ecomprocessing_base::ACTION_VOID) {

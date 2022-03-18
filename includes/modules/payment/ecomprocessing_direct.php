@@ -13,11 +13,12 @@
 /**
  * E-Comprocessing Direct
  *
- * Main class, instantiated by EComprocessing providing
+ * Main class, instantiated by ecomprocessing providing
  * necessary methods to facilitate payments through
  * E-Comprocessing's Payment Gateway
  */
 
+use Genesis\API\Constants\Transaction\Names;
 use Genesis\API\Constants\Transaction\Types;
 
 if (!class_exists('ecomprocessing_method_base')) {
@@ -207,7 +208,7 @@ class ecomprocessing_direct extends ecomprocessing_method_base
         $this->validateCreditCardInfo($HTTP_POST_VARS);
 
         $data                   = new stdClass();
-        $data->transaction_id   = $this->getGeneratedTransactionId();
+        $data->transaction_id   = $this->getGeneratedTransactionId(self::PLATFORM_TRANSACTION_PREFIX);
         $data->transaction_type = $this->getSetting('TRANSACTION_TYPE');
         $data->description      = '';
 
@@ -302,7 +303,7 @@ class ecomprocessing_direct extends ecomprocessing_method_base
         $params = array(
             'transaction_id'      => $data->transaction_id,
             'remote_ip'           => $this->getServerRemoteAddress(),
-            'usage'               => 'osCommerce Electronic Transaction',
+            'usage'               => self::getUsage(),
             'currency'            => $data->currency,
             'amount'              => $data->order->info['total'],
             'card_holder'         => $data->card_info['cc_owner'],
@@ -421,10 +422,10 @@ class ecomprocessing_direct extends ecomprocessing_method_base
     public function getConfigTransactionTypesOptions()
     {
         $transactionTypes = array(
-            Types::AUTHORIZE    => 'Authorize',
-            Types::AUTHORIZE_3D => 'Authorize3D',
-            Types::SALE         => 'Sale',
-            Types::SALE_3D      => 'Sale 3D'
+            Types::AUTHORIZE    => Names::getName(Types::AUTHORIZE),
+            Types::AUTHORIZE_3D => Names::getName(Types::AUTHORIZE_3D),
+            Types::SALE         => Names::getName(Types::SALE),
+            Types::SALE_3D      => Names::getName(Types::SALE_3D)
         );
 
         return $this->buildSettingsDropDownOptions(

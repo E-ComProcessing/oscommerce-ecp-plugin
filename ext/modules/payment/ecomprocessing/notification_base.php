@@ -22,7 +22,7 @@ if (!class_exists('ecomprocessing_base')) {
 }
 
 /**
- * Base Abstract EComprocessing Notification Class
+ * Base Abstract ecomprocessing Notification Class
  * Class ecomprocessing_notification_base
  */
 abstract class ecomprocessing_notification_base extends ecomprocessing_base
@@ -68,7 +68,7 @@ abstract class ecomprocessing_notification_base extends ecomprocessing_base
     protected function getOrderByTransaction($unique_id)
     {
         $query = tep_db_query('select `order_id` from `' . $this->getTableNameTransactions() . '`
-                                where `unique_id` = "' . $unique_id . '"');
+                                where `unique_id` = "' . filter_var($unique_id, FILTER_SANITIZE_MAGIC_QUOTES) . '"');
 
         if (tep_db_num_rows($query) < 1) {
             return null;

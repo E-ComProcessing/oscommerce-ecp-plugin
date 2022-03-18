@@ -13,7 +13,7 @@
 /**
  * E-Comprocessing Checkout
  *
- * Main class, instantiated by EComprocessing providing
+ * Main class, instantiated by ecomprocessing providing
  * necessary methods to facilitate payments through
  * E-Comprocessing's Payment Gateway
  */
@@ -67,16 +67,49 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             !empty($this->getSetting('TRANSACTION_TYPES'));
     }
 
+    public function install()
+    {
+        parent::install();
+
+        $this->createConsumersTable();
+    }
+
+    protected function createConsumersTable()
+    {
+        tep_db_query('
+            CREATE TABLE `' . static::ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME . '` (
+			  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+			  `customer_id` int(10) unsigned NOT NULL,
+			  `customer_email` varchar(255) NOT NULL,
+			  `consumer_id` int(10) unsigned NOT NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `customer_email` (`customer_email`)
+			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=\'Tokenization consumers in Genesis\';
+        ');
+    }
+
+    public function remove()
+    {
+        parent::remove();
+
+        $this->removeConsumersTable();
+    }
+
+    protected function removeConsumersTable()
+    {
+        tep_db_query('DROP TABLE IF EXISTS `' . static::ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME . '`');
+    }
+
     /**
      * Process Request to the Gateway
      * @return bool
      */
     protected function doBeforeProcessPayment()
     {
-        global $order, $messageStack;
+        global $order;
 
         $data                 = new stdClass();
-        $data->transaction_id = $this->getGeneratedTransactionId();
+        $data->transaction_id = $this->getGeneratedTransactionId(self::PLATFORM_TRANSACTION_PREFIX);
         $data->description    = '';
 
         foreach ($order->products as $product) {
@@ -107,6 +140,10 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         try {
             $this->responseObject = $this->pay($data);
 
+            if (isset($this->responseObject->consumer_id)) {
+                $this->saveConsumerId($this->responseObject->consumer_id);
+            }
+
             return true;
         } catch (\Genesis\Exceptions\ErrorAPI $api) {
             $errorMessage         = $api->getMessage();
@@ -122,14 +159,7 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         }
 
         if (empty($this->responseObject) && !empty($errorMessage)) {
-            $messageStack->add_session($errorMessage, 'error');
-            tep_redirect(
-                tep_href_link(
-                    FILENAME_CHECKOUT_PAYMENT,
-                    'payment_error=' . get_class($this),
-                    'SSL'
-                )
-            );
+            $this->redirectToShowError($errorMessage);
         }
 
         return false;
@@ -151,10 +181,11 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         $genesis
             ->request()
                 ->setTransactionId($data->transaction_id)
-                ->setUsage('osCommerce Electronic Transaction')
+                ->setUsage(self::getUsage())
                 ->setDescription($data->description)
                 ->setNotificationUrl($data->urls['notification'])
                 ->setReturnSuccessUrl($data->urls['return_success'])
+                ->setReturnPendingUrl($data->urls['return_success'])
                 ->setReturnFailureUrl($data->urls['return_failure'])
                 ->setReturnCancelUrl($data->urls['return_cancel'])
                 ->setCurrency($data->currency)
@@ -178,10 +209,164 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
                 ->setLanguage($data->language_id);
 
         $this->setTransactionTypes($genesis->request(), $data);
+        $this->setTokenizationData($genesis->request());
 
         $genesis->execute();
 
         return $genesis->response()->getResponseObject();
+    }
+
+    /**
+     * @param $request
+     *
+     * @throws Exception
+     */
+    protected function setTokenizationData($request)
+    {
+        global $customer_id;
+
+        $consumer = $this->getConsumerFromDb();
+
+        if ($consumer !== false && $consumer['customer_id'] != $customer_id) {
+            return $this->redirectToShowTokenizationError();
+        }
+
+        if ($consumer === false) {
+            $consumer_id = $this->getConsumerIdFromGenesisGateway();
+
+            if ($consumer_id !== 0) {
+                $this->saveConsumerId($consumer_id);
+            }
+        } else {
+            $consumer_id = $consumer['consumer_id'];
+        }
+
+        if (!empty($consumer_id)) {
+            $request->setConsumerId($consumer_id);
+        }
+
+        if ($this->getBoolSetting('WPF_TOKENIZATION')) {
+            $request->setRememberCard(true);
+        }
+    }
+
+    /**
+     * Redirects to cancel the current operation and show tokenization error
+     */
+    protected function redirectToShowTokenizationError()
+    {
+        $this->redirectToShowError('Cannot process your request, please contact the administrator.');
+    }
+
+    /**
+     * Redirects to cancel the current operation and show error
+     *
+     * @param string $message
+     */
+    protected function redirectToShowError($message)
+    {
+        global $messageStack;
+
+        $messageStack->add_session($message, 'error');
+        tep_redirect(
+            tep_href_link(
+                FILENAME_CHECKOUT_PAYMENT,
+                'payment_error=' . get_class($this),
+                'SSL'
+            )
+        );
+    }
+
+    /**
+     * @return array|bool
+     */
+    protected function getConsumerFromDb()
+    {
+        global $order;
+
+        $consumer_query = tep_db_query('
+          SELECT
+            *
+          FROM
+            `' . static::ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME . "`
+          WHERE
+            `customer_email` = '" . filter_var($order->customer['email_address'], FILTER_SANITIZE_MAGIC_QUOTES) . "'
+        ");
+        $consumer = tep_db_fetch_array($consumer_query);
+
+        return !empty($consumer) ? $consumer : false;
+    }
+
+    /**
+     * @return int
+     */
+    protected function getConsumerIdFromGenesisGateway()
+    {
+        global $order;
+
+        try {
+            $genesis = new \Genesis\Genesis('NonFinancial\Consumers\Retrieve');
+            $genesis->request()->setEmail($order->customer['email_address']);
+
+            $genesis->execute();
+
+            $response = $genesis->response()->getResponseObject();
+
+            if ($this->isErrorResponse($response)) {
+                return 0;
+            }
+
+            return intval($response->consumer_id);
+        } catch (\Exception $exception) {
+            return 0;
+        }
+    }
+
+    /**
+     * @param $response
+     *
+     * @return bool
+     */
+    protected function isErrorResponse($response)
+    {
+        $state = new \Genesis\API\Constants\Transaction\States($response->status);
+
+        return $state->isError();
+    }
+
+    /**
+     * @param $consumer_id
+     *
+     * @return bool
+     */
+    protected function saveConsumerId($consumer_id)
+    {
+        global $customer_id, $order;
+
+        if (empty($order->customer['email_address']) || empty($consumer_id)) {
+            return false;
+        }
+
+        $consumer = $this->getConsumerFromDb();
+
+        if ($consumer !== false) {
+            return false;
+        }
+
+        tep_db_query("
+            INSERT INTO `" . static::ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME . "` (
+                `customer_id`,
+                `customer_email`,
+                `consumer_id`
+            )
+            VALUES (
+                " . intval($customer_id) . ",
+                '" . filter_var($order->customer['email_address'], FILTER_SANITIZE_MAGIC_QUOTES) . "',
+                " . intval($consumer_id) . "
+            )
+        ");
+
+        return true;
     }
 
     private function setTransactionTypes($request, $data)
@@ -206,7 +391,11 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             ),
             Types::INSTA_DEBIT_PAYIN   => array(
                 'customer_account_id' => $userIdHash
-            )
+            ),
+            Types::TRUSTLY_SALE        => array(
+                'user_id' => $userIdHash
+            ),
+            Types::KLARNA_AUTHORIZE    => ecp_get_klarna_custom_param_items($data)->toArray()
         );
 
         $transactionTypes = static::getCheckoutTransactionTypes();
@@ -269,23 +458,30 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
     function getCheckoutTransactionTypes()
     {
         $processed_list = array();
+        $alias_map      = array();
 
         $selected_types = array_map(
             'trim',
             explode(',', $this->getSetting('TRANSACTION_TYPES'))
         );
+        $methods = \Genesis\API\Constants\Payment\Methods::getMethods();
 
-        $alias_map = array(
-            Methods::EPS         => Types::PPRO,
-            Methods::GIRO_PAY    => Types::PPRO,
-            Methods::PRZELEWY24  => Types::PPRO,
-            Methods::QIWI        => Types::PPRO,
-            Methods::SAFETY_PAY  => Types::PPRO,
-            Methods::TELEINGRESO => Types::PPRO,
-            Methods::TRUST_PAY   => Types::PPRO,
-            Methods::BCMC        => Types::PPRO,
-            Methods::MYBANK      => Types::PPRO,
-        );
+        foreach ($methods as $method) {
+            $alias_map[$method . self::PPRO_TRANSACTION_SUFFIX] = \Genesis\API\Constants\Transaction\Types::PPRO;
+        }
+
+        $alias_map = array_merge($alias_map, [
+            self::GOOGLE_PAY_TRANSACTION_PREFIX . self::GOOGLE_PAY_PAYMENT_TYPE_AUTHORIZE =>
+                Types::GOOGLE_PAY,
+            self::GOOGLE_PAY_TRANSACTION_PREFIX . self::GOOGLE_PAY_PAYMENT_TYPE_SALE      =>
+                Types::GOOGLE_PAY,
+            self::PAYPAL_TRANSACTION_PREFIX . self::PAYPAL_PAYMENT_TYPE_AUTHORIZE         =>
+                Types::PAY_PAL,
+            self::PAYPAL_TRANSACTION_PREFIX . self::PAYPAL_PAYMENT_TYPE_SALE              =>
+                Types::PAY_PAL,
+            self::PAYPAL_TRANSACTION_PREFIX . self::PAYPAL_PAYMENT_TYPE_EXPRESS           =>
+                Types::PAY_PAL
+        ]);
 
         foreach ($selected_types as $selected_type) {
             if (array_key_exists($selected_type, $alias_map)) {
@@ -293,8 +489,18 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
 
                 $processed_list[$transaction_type]['name'] = $transaction_type;
 
+                $key = $this->getCustomParameterKey($transaction_type);
+
                 $processed_list[$transaction_type]['parameters'][] = array(
-                    'payment_method' => $selected_type
+                    $key => str_replace(
+                        [
+                            self::PPRO_TRANSACTION_SUFFIX,
+                            self::GOOGLE_PAY_TRANSACTION_PREFIX,
+                            self::PAYPAL_TRANSACTION_PREFIX
+                        ],
+                        '',
+                        $selected_type
+                    )
                 );
             } else {
                 $processed_list[] = $selected_type;
@@ -341,7 +547,16 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
                 "ecp_zfg_select_drop_down_single_from_object(\"{$this->code}\", \"getConfigLanguageOptions\",",
                 null
             ),
-
+            array(
+                "WPF Tokenization",
+                $this->getSettingKey('WPF_TOKENIZATION'),
+                "false",
+                "Enable WPF Tokenization",
+                "6",
+                "50",
+                "ecp_zfg_draw_toggle(",
+                "ecp_zfg_get_toggle_value"
+            ),
         );
 
         return array_merge(
@@ -356,45 +571,69 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
      */
     public function getConfigTransactionTypesOptions()
     {
-        $transactionTypes = array(
-            Types::ALIPAY              => 'Alipay',
-            Types::ABNIDEAL            => 'ABN iDEAL',
-            Types::AUTHORIZE           => 'Authorize',
-            Types::AUTHORIZE_3D        => 'Authorize 3D',
-            Types::CASHU               => 'CashU',
-            Types::CITADEL_PAYIN       => 'Citadel',
-            Methods::EPS               => 'eps',
-            Types::EZEEWALLET          => 'eZeeWallet',
-            Methods::GIRO_PAY          => 'GiroPay',
-            Types::IDEBIT_PAYIN        => 'iDebit',
-            Types::INPAY               => 'INPay',
-            Types::INSTA_DEBIT_PAYIN   => 'InstaDebit',
-            Methods::BCMC              => 'Mr.Cash',
-            Methods::MYBANK            => 'MyBank',
-            Types::NETELLER            => 'Neteller',
-            Methods::QIWI              => 'Qiwi',
-            Types::P24                 => 'P24',
-            Types::PAYBYVOUCHER_SALE   => 'PayByVoucher (Sale)',
-            Types::PAYBYVOUCHER_YEEPAY => 'PayByVoucher (oBeP)',
-            Types::PAYPAL_EXPRESS      => 'PayPal Express',
-            Types::PAYSAFECARD         => 'PaySafeCard',
-            Types::PAYSEC_PAYIN        => 'PaySec',
-            Methods::PRZELEWY24        => 'Przelewy24',
-            Types::POLI                => 'POLi',
-            Methods::SAFETY_PAY        => 'SafetyPay',
-            Types::SALE                => 'Sale',
-            Types::SALE_3D             => 'Sale 3D',
-            Types::SDD_SALE            => 'Sepa Direct Debit',
-            Types::SOFORT              => 'SOFORT',
-            Methods::TELEINGRESO       => 'teleingreso',
-            Types::TRUSTLY_SALE        => 'Trustly',
-            Methods::TRUST_PAY         => 'TrustPay',
-            Types::WEBMONEY            => 'WebMoney',
-            Types::WECHAT              => 'WeChat'
+        $data = array();
+
+        $transactionTypes = \Genesis\API\Constants\Transaction\Types::getWPFTransactionTypes();
+        $excludedTypes    = self::getRecurringTransactionTypes();
+
+        // Exclude PPRO transaction. This is not standalone transaction type
+        array_push($excludedTypes, \Genesis\API\Constants\Transaction\Types::PPRO);
+
+        // Exclude GooglePay transaction. In this way Google Pay Payment types will be introduced
+        array_push($excludedTypes, \Genesis\API\Constants\Transaction\Types::GOOGLE_PAY);
+
+        // Exclude PayPal transaction.
+        array_push($excludedTypes, \Genesis\API\Constants\Transaction\Types::PAY_PAL);
+
+        // Exclude Transaction Types
+        $transactionTypes = array_diff($transactionTypes, $excludedTypes);
+
+        //Add PPRO types
+        $pproTypes = array_map(
+            function ($type) {
+                return $type . self::PPRO_TRANSACTION_SUFFIX;
+            },
+            \Genesis\API\Constants\Payment\Methods::getMethods()
         );
 
+        $googlePayTypes = array_map(
+            function ($type) {
+                return self::GOOGLE_PAY_TRANSACTION_PREFIX . $type;
+            },
+            [
+                self::GOOGLE_PAY_PAYMENT_TYPE_AUTHORIZE,
+                self::GOOGLE_PAY_PAYMENT_TYPE_SALE
+            ]
+        );
+
+        $payPalTypes = array_map(
+            function ($type) {
+                return self::PAYPAL_TRANSACTION_PREFIX . $type;
+            },
+            [
+                self::PAYPAL_PAYMENT_TYPE_AUTHORIZE,
+                self::PAYPAL_PAYMENT_TYPE_SALE,
+                self::PAYPAL_PAYMENT_TYPE_EXPRESS
+            ]
+        );
+
+        $transactionTypes = array_merge(
+            $transactionTypes,
+            $pproTypes,
+            $googlePayTypes,
+            $payPalTypes
+        );
+        asort($transactionTypes);
+
+        foreach ($transactionTypes as $type) {
+            $name = \Genesis\API\Constants\Transaction\Types::isValidTransactionType($type) ?
+                \Genesis\API\Constants\Transaction\Names::getName($type) : strtoupper($type);
+
+            $data[$type] = $name;
+        }
+
         return $this->buildSettingsDropDownOptions(
-            $transactionTypes
+            $data
         );
     }
 
@@ -404,24 +643,18 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
      */
     public function getConfigLanguageOptions()
     {
-        $languages = array(
-            'en' => 'English',
-            'it' => 'Italian',
-            'es' => 'Spanish',
-            'fr' => 'French',
-            'de' => 'German',
-            'ja' => 'Japanese',
-            'zh' => 'Chinese',
-            'ar' => 'Arabic',
-            'pt' => 'Portuguese',
-            'tr' => 'Turkish',
-            'ru' => 'Russian',
-            'hi' => 'Hindi',
-            'bg' => 'Bulgarian'
-        );
+        $data = array();
+
+        $languages = \Genesis\API\Constants\i18n::getAll();
+
+        foreach ($languages as $language) {
+            $languageTranslation = 'MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_' . strtoupper($language);
+            $data[$language] = defined($languageTranslation) ?
+                constant($languageTranslation) : strtoupper($language);
+        }
 
         return $this->buildSettingsDropDownOptions(
-            $languages
+            $data
         );
     }
 
@@ -438,15 +671,40 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             array(
                 'STATUS',
                 'ENVIRONMENT',
-                'TRANSACTION_TYPES'
+                'TRANSACTION_TYPES',
+                'LANGUAGE'
             ),
             array(
                 'CHECKOUT_PAGE_TITLE',
                 'TRANSACTION_TYPES',
-                'LANGUAGE'
+                'LANGUAGE',
+                'WPF_TOKENIZATION'
             )
         );
 
         return $keys;
+    }
+
+    /**
+     * @param $transaction_type
+     * @return string
+     */
+    private function getCustomParameterKey($transaction_type)
+    {
+        switch ($transaction_type) {
+            case \Genesis\API\Constants\Transaction\Types::PPRO:
+                $result = 'payment_method';
+                break;
+            case \Genesis\API\Constants\Transaction\Types::PAY_PAL:
+                $result = 'payment_type';
+                break;
+            case \Genesis\API\Constants\Transaction\Types::GOOGLE_PAY:
+                $result = 'payment_subtype';
+                break;
+            default:
+                $result = 'unknown';
+        }
+
+        return $result;
     }
 }

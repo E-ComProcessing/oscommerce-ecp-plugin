@@ -15,7 +15,7 @@ define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_TITLE', 'E-Comprocessing Che
 define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_PUBLIC_CHECKOUT_CONTAINER', '<img style="border: 0px none; display: block" src="images/ecomprocessing/logos/ecomprocessing_checkout.png" /><span style="display: block; font-weight: bold; margin-left: 50pt;">E-Comprocessing offers a secure way to pay for your order, using Credit/Debit/Prepaid Card, e-Wallet or Vouchers.</span> <br /> <span style="display: block; font-style: italic; margin-left: 50pt;">Notice: You will be redirected to E-Comprocessing\'s Secure Checkout Page, in order to complete your payment!</span>');
 define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_PUBLIC_TITLE', 'E-Comprocessing Checkout');
 
-define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_DESCRIPTION', '<a href="https://e-comprocessing.com" target="_blank" style="width: 50%; display: block; margin: 0px auto;"><img style="border: 0px none; margin: 0px; width: 100%;" src="images/ecomprocessing/logos/ecomprocessing.png"/></a> <br/> Accept Credit/Debit Cards or Alternative Payments (e-Wallet, Prepaid-Cards, Vouchers etc.) via Payment Form on EComprocessing PCI-certified servers. <br/> <br/> <img style="border: 0px none; margin: 0 auto; display: block" src="images/ecomprocessing/logos/ecomprocessing_checkout.png" /> <br /> <a href="https://e-comprocessing.com" target="_blank" style="text-decoration:underline;font-weight:bold; display: block; text-align: center;">Visit E-Comprocessing\'s Website</a>');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_DESCRIPTION', '<a href="https://e-comprocessing.com" target="_blank" style="width: 50%; display: block; margin: 0px auto;"><img style="border: 0px none; margin: 0px; width: 100%;" src="images/ecomprocessing/logos/ecomprocessing.png"/></a> <br/> Accept Credit/Debit Cards or Alternative Payments (e-Wallet, Prepaid-Cards, Vouchers etc.) via Payment Form on ecomprocessing PCI-certified servers. <br/> <br/> <img style="border: 0px none; margin: 0 auto; display: block" src="images/ecomprocessing/logos/ecomprocessing_checkout.png" /> <br /> <a href="https://e-comprocessing.com" target="_blank" style="text-decoration:underline;font-weight:bold; display: block; text-align: center;">Visit E-Comprocessing\'s Website</a>');
 define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TEXT_REDIRECT_WARNING', 'Notice: You will be redirected to E-Comprocessing\'s Secure Checkout Page, in order to complete your payment!');
 
 // Error
@@ -56,3 +56,27 @@ define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_LABEL_ORDER_TRANS_HEADER_ACTION_V
 
 define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_LABEL_ORDER_TRANS_MODAL_AMOUNT_LABEL_CAPTURE', 'Capture amount');
 define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_LABEL_ORDER_TRANS_MODAL_AMOUNT_LABEL_REFUND', 'Refund amount');
+
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_EN', 'English');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_IT', 'Italian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_ES', 'Spanish');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_FR', 'French');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_DE', 'German');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_JA', 'Japanese');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_ZH', 'Chinese');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_AR', 'Arabic');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_PT', 'Portuguese');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TR', 'Turkish');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_RU', 'Russian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_HI', 'Hindi');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_BG', 'Bulgarian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_IS', 'Icelandic');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_NL', 'Dutch');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_PL', 'Polish');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_ID', 'Indonesian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_MS', 'Malay');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_TH', 'Thai');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_CS', 'Czech');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_HR', 'Croatian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_SL', 'Slovenian');
+define('MODULE_PAYMENT_ECOMPROCESSING_CHECKOUT_FI', 'Finnish');

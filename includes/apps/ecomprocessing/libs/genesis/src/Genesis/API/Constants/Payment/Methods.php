@@ -60,25 +60,11 @@ class Methods
     const PRZELEWY24 = 'przelewy24';
 
     /**
-     * QIWI
-     *
-     * PPRO transaction
-     */
-    const QIWI = 'qiwi';
-
-    /**
      * SafetyPay
      *
      * PPRO transaction
      */
     const SAFETY_PAY = 'safetypay';
-
-    /**
-     * Teleingreso
-     *
-     * PPRO transaction
-     */
-    const TELEINGRESO = 'teleingreso';
 
     /**
      * TrustPay

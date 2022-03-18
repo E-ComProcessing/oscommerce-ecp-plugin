@@ -22,6 +22,10 @@
  */
 namespace Genesis\API\Request\Financial;
 
+use Genesis\API\Traits\Request\Financial\TravelData\TravelDataAttributes;
+use Genesis\API\Traits\Request\Financial\Business\BusinessAttributes;
+use Genesis\API\Traits\RestrictedSetter;
+
 /**
  * Class Capture
  *
@@ -31,6 +35,8 @@ namespace Genesis\API\Request\Financial;
  */
 class Capture extends \Genesis\API\Request\Base\Financial\Reference
 {
+    use TravelDataAttributes, BusinessAttributes, RestrictedSetter;
+
     /**
      * Returns the Request transaction type
      * @return string
@@ -38,5 +44,19 @@ class Capture extends \Genesis\API\Request\Base\Financial\Reference
     protected function getTransactionType()
     {
         return \Genesis\API\Constants\Transaction\Types::CAPTURE;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getPaymentTransactionStructure()
+    {
+        return array_merge(
+            parent::getPaymentTransactionStructure(),
+            [
+                'travel'              => $this->getTravelData(),
+                'business_attributes' => $this->getBusinessAttributesStructure()
+            ]
+        );
     }
 }

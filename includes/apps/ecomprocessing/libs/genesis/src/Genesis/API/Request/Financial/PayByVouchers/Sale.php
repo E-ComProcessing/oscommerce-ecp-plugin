@@ -31,6 +31,7 @@ use Genesis\API\Traits\Request\CreditCardAttributes;
 use Genesis\API\Traits\Request\AddressInfoAttributes;
 use Genesis\API\Traits\Request\Financial\DescriptorAttributes;
 use Genesis\Utils\Currency;
+use Genesis\Utils\Common as CommonUtils;
 
 /**
  * Class Sale
@@ -103,10 +104,22 @@ class Sale extends \Genesis\API\Request\Base\Financial
             'expiration_year'           => $this->expiration_year,
             'customer_email'            => $this->customer_email,
             'customer_phone'            => $this->customer_phone,
-            'birth_date'                => $this->birth_date,
+            'birth_date'                => $this->getBirthDate(),
             'billing_address'           => $this->getBillingAddressParamsStructure(),
             'shipping_address'          => $this->getShippingAddressParamsStructure(),
             'dynamic_descriptor_params' => $this->getDynamicDescriptorParamsStructure()
         ];
+    }
+
+    /**
+     * Skip Credit Card validation if Client-Side Encryption is set
+     *
+     * @return void
+     */
+    protected function checkRequirements()
+    {
+        $this->removeCreditCardValidations();
+
+        parent::checkRequirements();
     }
 }

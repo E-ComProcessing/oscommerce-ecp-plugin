@@ -23,11 +23,13 @@
 
 namespace Genesis\API\Request\NonFinancial;
 
+use Genesis\API\Constants\NonFinancial\Services;
 use Genesis\API\Traits\Request\AddressInfoAttributes;
 use Genesis\API\Traits\Request\BaseAttributes;
 use Genesis\API\Traits\Request\CreditCardAttributes;
 use Genesis\API\Traits\Request\MotoAttributes;
 use Genesis\API\Traits\Request\RiskAttributes;
+use Genesis\Utils\Common as CommonUtils;
 
 /**
  * Address Verification System Request
@@ -85,7 +87,7 @@ class AVS extends \Genesis\API\Request
     {
         $treeStructure = [
             'payment_transaction' => [
-                'transaction_type' => \Genesis\API\Constants\Transaction\Types::AVS,
+                'transaction_type' => Services::AVS,
                 'transaction_id'   => $this->transaction_id,
                 'usage'            => $this->usage,
                 'moto'             => $this->moto,
@@ -97,7 +99,7 @@ class AVS extends \Genesis\API\Request
                 'expiration_year'  => $this->expiration_year,
                 'customer_email'   => $this->customer_email,
                 'customer_phone'   => $this->customer_phone,
-                'birth_date'       => $this->birth_date,
+                'birth_date'       => $this->getBirthDate(),
                 'billing_address'  => $this->getBillingAddressParamsStructure(),
                 'shipping_address' => $this->getShippingAddressParamsStructure(),
                 'risk_params'      => $this->getRiskParamsStructure()
@@ -105,5 +107,17 @@ class AVS extends \Genesis\API\Request
         ];
 
         $this->treeStructure = \Genesis\Utils\Common::createArrayObject($treeStructure);
+    }
+
+    /**
+     * Skip Credit Card validation if Client-Side Encryption is set
+     *
+     * @return void
+     */
+    protected function checkRequirements()
+    {
+        $this->removeCreditCardValidations();
+
+        parent::checkRequirements();
     }
 }

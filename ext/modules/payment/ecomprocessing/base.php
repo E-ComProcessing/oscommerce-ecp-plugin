@@ -18,16 +18,17 @@
  */
 
 /**
- * EComprocessing Base Class
+ * ecomprocessing Base Class
  * Class ecomprocessing_base
  */
 abstract class ecomprocessing_base
 {
     const ECOMPROCESSING_CHECKOUT_METHOD_CODE = 'ecomprocessing_checkout';
-    const ECOMPROCESSING_DIRECT_METHOD_CODE = 'ecomprocessing_direct';
+    const ECOMPROCESSING_DIRECT_METHOD_CODE   = 'ecomprocessing_direct';
 
     const ECOMPROCESSING_CHECKOUT_TRANSACTIONS_TABLE_NAME = 'ecomprocessing_checkout_transactions';
-    const ECOMPROCESSING_DIRECT_TRANSACTIONS_TABLE_NAME = 'ecomprocessing_direct_transactions';
+    const ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME    = 'ecomprocessing_checkout_consumers';
+    const ECOMPROCESSING_DIRECT_TRANSACTIONS_TABLE_NAME   = 'ecomprocessing_direct_transactions';
 
     const ACTION_CAPTURE = 'doCapture';
     const ACTION_REFUND  = 'doRefund';
@@ -253,7 +254,7 @@ abstract class ecomprocessing_base
 
             $values = implode(', ', array_map(
                 function ($v) {
-                    return sprintf("'%s'", $v);
+                    return "'" . filter_var($v, FILTER_SANITIZE_MAGIC_QUOTES) . "'";
                 },
                 $data,
                 array_keys(
@@ -295,7 +296,7 @@ abstract class ecomprocessing_base
 				SET
 					" . $fields . "
 				WHERE
-				    `unique_id` = '" . $data['unique_id'] . "'
+				    `unique_id` = '" . filter_var($data['unique_id'], FILTER_SANITIZE_MAGIC_QUOTES) . "'
 			");
         } catch (Exception $exception) {
 
@@ -317,7 +318,7 @@ abstract class ecomprocessing_base
                 FROM
                     `" . $this->getTableNameTransactions() . "`
                 WHERE
-                    `unique_id` = '" . $data['unique_id'] . "'
+                    `unique_id` = '" . filter_var($data['unique_id'], FILTER_SANITIZE_MAGIC_QUOTES) . "'
             ");
 
             if (tep_db_num_rows($insertQuery) > 0) {
