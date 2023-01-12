@@ -22,6 +22,8 @@ use Genesis\API\Constants\Transaction\Parameters\PayByVouchers\CardTypes;
 use Genesis\API\Constants\Transaction\Parameters\PayByVouchers\RedeemTypes;
 use Genesis\API\Constants\Transaction\Types;
 use Genesis\API\Constants\Payment\Methods;
+use Genesis\API\Constants\Banks;
+use Genesis\Utils\Common as CommonUtils;
 
 if (!class_exists('ecomprocessing_method_base')) {
     require_once DIR_FS_CATALOG . 'ext/modules/payment/ecomprocessing/method_base.php';
@@ -464,6 +466,11 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             'trim',
             explode(',', $this->getSetting('TRANSACTION_TYPES'))
         );
+        $selected_bank_codes = array_map(
+            'trim',
+            explode(',', $this->getSetting('BANK_CODES'))
+        );
+
         $methods = \Genesis\API\Constants\Payment\Methods::getMethods();
 
         foreach ($methods as $method) {
@@ -480,10 +487,26 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             self::PAYPAL_TRANSACTION_PREFIX . self::PAYPAL_PAYMENT_TYPE_SALE              =>
                 Types::PAY_PAL,
             self::PAYPAL_TRANSACTION_PREFIX . self::PAYPAL_PAYMENT_TYPE_EXPRESS           =>
-                Types::PAY_PAL
+                Types::PAY_PAL,
+            self::APPLE_PAY_TRANSACTION_PREFIX . self::APPLE_PAY_PAYMENT_TYPE_AUTHORIZE   =>
+                Types::APPLE_PAY,
+            self::APPLE_PAY_TRANSACTION_PREFIX . self::APPLE_PAY_PAYMENT_TYPE_SALE        =>
+                Types::APPLE_PAY,
         ]);
 
         foreach ($selected_types as $selected_type) {
+            if ($selected_type == Types::ONLINE_BANKING_PAYIN && CommonUtils::isValidArray($selected_bank_codes)) {
+                $processed_list[$selected_type]['name']                     = $selected_type;
+                $processed_list[$selected_type]['parameters']['bank_codes'] = array_map(
+                    function ($value) {
+                        return ['bank_code' => $value];
+                    },
+                    $selected_bank_codes
+                );
+
+                continue;
+            }
+
             if (array_key_exists($selected_type, $alias_map)) {
                 $transaction_type = $alias_map[$selected_type];
 
@@ -496,7 +519,8 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
                         [
                             self::PPRO_TRANSACTION_SUFFIX,
                             self::GOOGLE_PAY_TRANSACTION_PREFIX,
-                            self::PAYPAL_TRANSACTION_PREFIX
+                            self::PAYPAL_TRANSACTION_PREFIX,
+                            self::APPLE_PAY_TRANSACTION_PREFIX
                         ],
                         '',
                         $selected_type
@@ -531,10 +555,20 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
                 'Transaction Types',
                 $this->getSettingKey('TRANSACTION_TYPES'),
                 Types::SALE,
-                'What transaction type should we use upon purchase?.',
+                'What transaction type should we use upon purchase?',
                 '6',
                 '60',
                 "ecp_zfg_select_drop_down_multiple_from_object({$this->requiredOptionsAttributes}, \"{$this->code}\", \"getConfigTransactionTypesOptions\", ",
+                null
+            ),
+            array(
+                'Bank code(s) for Online banking',
+                $this->getSettingKey('BANK_CODES'),
+                '',
+                'If Online banking is chosen as transaction type, here you can select Bank code(s).',
+                '6',
+                '62',
+                "ecp_zfg_select_drop_down_multiple_from_object(null, \"{$this->code}\", \"getConfigBankCodes\", ",
                 null
             ),
             array(
@@ -585,6 +619,9 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         // Exclude PayPal transaction.
         array_push($excludedTypes, \Genesis\API\Constants\Transaction\Types::PAY_PAL);
 
+        // Exclude Apple Pay transaction.
+        array_push($excludedTypes, \Genesis\API\Constants\Transaction\Types::APPLE_PAY);
+
         // Exclude Transaction Types
         $transactionTypes = array_diff($transactionTypes, $excludedTypes);
 
@@ -617,11 +654,22 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             ]
         );
 
+        $applePayTypes = array_map(
+            function ($type) {
+                return self::APPLE_PAY_TRANSACTION_PREFIX . $type;
+            },
+            [
+                self::APPLE_PAY_PAYMENT_TYPE_AUTHORIZE,
+                self::APPLE_PAY_PAYMENT_TYPE_SALE
+            ]
+        );
+
         $transactionTypes = array_merge(
             $transactionTypes,
             $pproTypes,
             $googlePayTypes,
-            $payPalTypes
+            $payPalTypes,
+            $applePayTypes
         );
         asort($transactionTypes);
 
@@ -677,12 +725,37 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             array(
                 'CHECKOUT_PAGE_TITLE',
                 'TRANSACTION_TYPES',
+                'BANK_CODES',
                 'LANGUAGE',
                 'WPF_TOKENIZATION'
             )
         );
 
         return $keys;
+    }
+
+    /**
+     * Returns list of available Bank codes for Online banking
+     *
+     * @return array
+     */
+    public function getAvailableBankCodes()
+    {
+        return [
+            Banks::CPI => 'Interac Combined Pay-in'
+        ];
+    }
+
+    /**
+     * Returns array of available Bank codes, formatted for the settings form
+     *
+     * @return array
+     */
+    public function getConfigBankCodes()
+    {
+        return $this->buildSettingsDropDownOptions(
+            $this->getAvailableBankCodes()
+        );
     }
 
     /**
@@ -699,6 +772,7 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
                 $result = 'payment_type';
                 break;
             case \Genesis\API\Constants\Transaction\Types::GOOGLE_PAY:
+            case \Genesis\API\Constants\Transaction\Types::APPLE_PAY:
                 $result = 'payment_subtype';
                 break;
             default:

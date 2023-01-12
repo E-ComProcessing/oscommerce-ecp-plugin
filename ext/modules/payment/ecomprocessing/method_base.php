@@ -97,10 +97,25 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
     const PAYPAL_PAYMENT_TYPE_EXPRESS = 'express';
 
     /**
+     * Apple Pay Transaction Prefix
+     */
+    const APPLE_PAY_TRANSACTION_PREFIX = 'apple_pay_';
+
+    /**
+     * Apple Pay Payment Method Authorize
+     */
+    const APPLE_PAY_PAYMENT_TYPE_AUTHORIZE = 'authorize';
+
+    /**
+     * Apple Pay Payment Method Sale
+     */
+    const APPLE_PAY_PAYMENT_TYPE_SALE = 'sale';
+
+    /**
      * Return Module Version
      * @var string
      */
-    public $version         = '1.5.7';
+    public $version         = '1.5.10';
     /**
      * Return Module Version
      * @var string
@@ -1477,7 +1492,8 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                         Types::AUTHORIZE,
                         Types::AUTHORIZE_3D,
                         Types::GOOGLE_PAY,
-                        Types::PAY_PAL
+                        Types::PAY_PAL,
+                        Types::APPLE_PAY
                     ),
                     \Genesis\API\Constants\Transaction\States::APPROVED
                 );
@@ -2566,16 +2582,17 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
     }
 
     /**
-     * Determine if Google Pay or PayPal Method is chosen inside the Payment settings
+     * Determine if Google Pay, PayPal or Apple Pay Method is chosen inside the Payment settings
      *
-     * @param string $transactionType GooglePay or PayPal Methods
+     * @param string $transactionType Google Pay, PayPal or Apple Pay Methods
      * @return bool
      */
     protected static function isTransactionWithCustomAttribute($transactionType)
     {
         $transaction_types = [
             Types::GOOGLE_PAY,
-            Types::PAY_PAL
+            Types::PAY_PAL,
+            Types::APPLE_PAY
         ];
 
         return in_array($transactionType, $transaction_types);
@@ -2626,6 +2643,21 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                     ];
 
                     return (count(array_intersect($refundableTypes, $selectedTypes)) > 0);
+                }
+                break;
+            case Types::APPLE_PAY:
+                if (self::ACTION_CAPTURE === $action) {
+                    return in_array(
+                        self::APPLE_PAY_TRANSACTION_PREFIX . self::APPLE_PAY_PAYMENT_TYPE_AUTHORIZE,
+                        $selectedTypes
+                    );
+                }
+
+                if (self::ACTION_REFUND === $action) {
+                    return in_array(
+                        self::APPLE_PAY_TRANSACTION_PREFIX . self::APPLE_PAY_PAYMENT_TYPE_SALE,
+                        $selectedTypes
+                    );
                 }
                 break;
             default:
