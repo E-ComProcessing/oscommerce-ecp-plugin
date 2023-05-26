@@ -24,11 +24,9 @@
 abstract class ecomprocessing_base
 {
     const ECOMPROCESSING_CHECKOUT_METHOD_CODE = 'ecomprocessing_checkout';
-    const ECOMPROCESSING_DIRECT_METHOD_CODE   = 'ecomprocessing_direct';
 
     const ECOMPROCESSING_CHECKOUT_TRANSACTIONS_TABLE_NAME = 'ecomprocessing_checkout_transactions';
     const ECOMPROCESSING_CHECKOUT_CONSUMERS_TABLE_NAME    = 'ecomprocessing_checkout_consumers';
-    const ECOMPROCESSING_DIRECT_TRANSACTIONS_TABLE_NAME   = 'ecomprocessing_direct_transactions';
 
     const ACTION_CAPTURE = 'doCapture';
     const ACTION_REFUND  = 'doRefund';

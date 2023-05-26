@@ -115,7 +115,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
      * Return Module Version
      * @var string
      */
-    public $version         = '1.5.10';
+    public $version         = '1.6.1';
     /**
      * Return Module Version
      * @var string
@@ -1905,7 +1905,7 @@ abstract class ecomprocessing_method_base extends ecomprocessing_base
                 "Enable Module",
                 $this->getSettingKey('STATUS'),
                 "true",
-                "Do you want to process payments via E-Comprocessings Genesis Gateway?",
+                "Do you want to process payments via ecomprocessings Genesis Gateway?",
                 "6",
                 "1",
                 "ecp_zfg_draw_toggle(",

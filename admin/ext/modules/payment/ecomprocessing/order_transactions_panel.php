@@ -82,10 +82,6 @@ class ecomprocessing_order_transactions_panel
                 'method_code' => ecomprocessing_base::ECOMPROCESSING_CHECKOUT_METHOD_CODE,
                 'table_name'  => ecomprocessing_base::ECOMPROCESSING_CHECKOUT_TRANSACTIONS_TABLE_NAME
             ),
-            array(
-                'method_code' => ecomprocessing_base::ECOMPROCESSING_DIRECT_METHOD_CODE,
-                'table_name'  => ecomprocessing_base::ECOMPROCESSING_DIRECT_TRANSACTIONS_TABLE_NAME
-            ),
         );
 
         foreach ($paymentMethods as $paymentMethod) {

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -18,56 +18,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @author      emerchantpay
+ * @copyright   Copyright (C) 2015-2023 emerchantpay Ltd.
  * @license     http://opensource.org/licenses/MIT The MIT License
  */
 
-namespace Genesis\API\Constants\Transaction\Parameters;
+namespace Genesis\API\Constants\NonFinancial\KYC;
 
 use Genesis\Utils\Common;
 
 /**
- * Class ScaExemptions
- * @package Genesis\API\Constants\Transaction\Parameters
+ * Class CallVerificationStatuses
+ * @package Genesis\API\Constants\NonFinancial\KYC
  */
-class ScaExemptions
+class CallVerificationStatuses
 {
     /**
-     * Exemption Low Value
-     */
-    const EXEMPTION_LOW_VALUE = 'low_value';
-
-    /**
-     * Exemption Low Risk
-     */
-    const EXEMPTION_LOW_RISK = 'low_risk';
-
-    /**
-     * Exemption Trusted Merchant
-     */
-    const EXEMPTION_TRUSTED_MERCHANT = 'trusted_merchant';
-
-    /**
-     * Exemption Corporate Payment
-     */
-    const EXEMPTION_CORPORATE_PAYMENT = 'corporate_payment';
-
-    /**
-     * Exemption Delegated Authentication
-     */
-    const EXEMPTION_DELEGATED_AUTHENTICATION = 'delegated_authentication';
-
-    /**
-     * Exemption Auth Network Outage
-     */
-    const EXEMPTION_AUTH_NETWORK_OUTAGE = 'auth_network_outage';
-
-    /**
-     * Get all the available Exemption values
+     * In progress
      *
+     * @var int
+     */
+    const IN_PROGRESS = 1;
+
+    /**
+     * Failed
+     *
+     * @var int
+     */
+    const FAILED = 2;
+
+    /**
+     * Verification fail
+     *
+     * @var int
+     */
+    const VERIFICATION_FAILED = 3;
+
+    /**
+     * Verification successful
+     *
+     * @var int
+     */
+    const VERIFICATION_SUCCESS = 4;
+
+    /**
+     * Abandoned
+     *
+     * @var int
+     */
+    const ABANDON = 5;
+
+    /**
      * @return array
      */
     public static function getAll()
     {
-        return array_values(Common::getClassConstants(self::class));
+        return Common::getClassConstants(self::class);
     }
 }
