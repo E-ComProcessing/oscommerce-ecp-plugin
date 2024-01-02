@@ -408,7 +408,10 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
             Types::TRUSTLY_SALE        => array(
                 'user_id' => $userIdHash
             ),
-            Types::KLARNA_AUTHORIZE    => ecp_get_klarna_custom_param_items($data)->toArray()
+            Types::KLARNA_AUTHORIZE    => ecp_get_klarna_custom_param_items($data)->toArray(),
+            Types::PAYSAFECARD         => array(
+                'customer_id' => $userIdHash
+            )
         );
 
         $transactionTypes = static::getCheckoutTransactionTypes();
@@ -473,10 +476,13 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         $processed_list = array();
         $alias_map      = array();
 
-        $selected_types = array_map(
-            'trim',
-            explode(',', $this->getSetting('TRANSACTION_TYPES'))
+        $selected_types = static::orderCardTransactionTypes(
+            array_map(
+                'trim',
+                explode(',', $this->getSetting('TRANSACTION_TYPES'))
+            )
         );
+
         $selected_bank_codes = array_map(
             'trim',
             explode(',', $this->getSetting('BANK_CODES'))
@@ -805,7 +811,8 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
     {
         return [
             Banks::CPI => 'Interac Combined Pay-in',
-            Banks::BCT => 'Bancontact'
+            Banks::BCT => 'Bancontact',
+            Banks::BLK => 'Blik One Click'
         ];
     }
 
@@ -956,5 +963,27 @@ class ecomprocessing_checkout extends ecomprocessing_method_base
         if ($wpf_amount <= $this->getSetting('SCA_EXEMPTION_AMOUNT')) {
             $request->setScaExemption($this->getSetting('SCA_EXEMPTION'));
         }
+    }
+
+
+    /**
+     * Order transaction types with Card Transaction types in front
+     *
+     * @param array $selectedTypes Selected transaction types
+     *
+     * @return array
+     */
+    private static function orderCardTransactionTypes($selectedTypes)
+    {
+        $order = \Genesis\API\Constants\Transaction\Types::getCardTransactionTypes();
+
+        asort($selectedTypes);
+
+        $sortedArray = array_intersect($selectedTypes, $order);
+
+        return array_merge(
+            $sortedArray,
+            array_diff($selectedTypes, $sortedArray)
+        );
     }
 }
