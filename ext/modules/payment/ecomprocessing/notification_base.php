@@ -109,7 +109,7 @@ abstract class ecomprocessing_notification_base extends ecomprocessing_base
 
         $this->setCredentials();
 
-        $notification = new \Genesis\API\Notification($requestData);
+        $notification = new \Genesis\Api\Notification($requestData);
 
         if (!$notification->isAuthentic()) {
             return false;

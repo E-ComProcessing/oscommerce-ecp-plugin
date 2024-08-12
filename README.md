@@ -7,7 +7,7 @@ Requirements
 ------------
 
 * osCommerce v2.x
-* [GenesisPHP v1.24.0](https://github.com/GenesisGateway/genesis_php/releases/tag/1.24.0) - (Integrated in Module)
+* [GenesisPHP v2.0.2](https://github.com/GenesisGateway/genesis_php/releases/tag/2.0.2) - (Integrated in Module)
 
 GenesisPHP Requirements
 ------------
@@ -57,12 +57,10 @@ Supported Transactions & Payment Methods
     * __eps__
     * __eZeeWallet__
     * __Fashioncheque__
-    * __GiroPay__
     * __Google Pay__
     * __iDeal__
     * __iDebit__
     * __InstaDebit__
-    * __InstantTransfer__
     * __InitRecurringSale__
     * __InitRecurringSale (3D-Secure)__
     * __Intersolve__
@@ -76,8 +74,10 @@ Supported Transactions & Payment Methods
     * __Neteller__
     * __Online Banking__
       * __Interac Combined Pay-in (CPI)__ 
-      * __Bancontact (BTC)__ 
-      * __Blik One Click (BLK)__
+      * __Bancontact (BCT)__ 
+      * __BLIK (BLK)__
+      * __SPEI (SE)__
+      * __LatiPay (PID)__
     * __OXXO__
     * __P24__
     * __Pago Facil__
@@ -87,15 +87,6 @@ Supported Transactions & Payment Methods
     * __Pix__
     * __POLi__
     * __Post Finance__
-    * __PPRO__
-        * __eps__
-        * __GiroPay__
-        * __Ideal__
-        * __Przelewy24__
-        * __SafetyPay__
-        * __TrustPay__
-        * __BCMC__
-        * __MyBank__
     * __PSE__
     * __RapiPago__
     * __Redpagos__
@@ -119,4 +110,4 @@ _Note_: If you have trouble with your credentials or terminal configuration, get
 
 You're now ready to process payments through our gateway.
 
-[support]: mailto:tech-support@e-comprocessing.com
+[support]: mailto:tech-support@e-comprocessing.net
